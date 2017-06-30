@@ -1,0 +1,236 @@
+<html>
+
+<head>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <!-- force IE browsers in compatibility mode to use their most aggressive rendering engine -->
+
+    <meta charset="utf-8">
+    <title>Sites Status</title>
+    <meta content="sanik's site status and server performance." name="description">
+
+    <!-- Mobile viewport optimization h5bp.com/ad -->
+    <meta content="True" name="HandheldFriendly">
+    <meta content="320" name="MobileOptimized">
+    <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" name="viewport">
+
+    <!-- Mobile IE allows us to activate ClearType technology for smoothing fonts for easy reading -->
+    <meta content="on" http-equiv="cleartype">
+
+    <link href="https://sanik90.github.io/img/utopic-unicorn.png" rel="shortcut icon">
+
+    <meta content="noindex,nofollow" name="robots">
+
+    <!-- Le styles -->
+	<link rel="stylesheet" media="all" href="css/style.css">
+    <link rel="stylesheet" media="all" href="css/status_manifest.css">
+	<link rel="stylesheet" media="all" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.css">
+	
+	<!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+
+    <!-- Le HTML5 shim -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body class="status index status-none" data-breakpoint-reached="false">
+
+	<div class="layout-content status status-index premium">
+		<div class="masthead-container premium">
+			<div class="masthead">
+				<div data-js-hook="images-container" id="cover-image-container" class="images-container" style="height: 315px;"></div>
+
+				<div class="text-container">
+					<span class="page-name font-largest">
+						<a href="https:://status.sanik.my"><i class="fa fa-server"></i> Sites Status</a>
+					</span>
+				</div>
+			</div>
+		</div> <!-- this is outside of the .container so that the cover photo can go full width on mobile -->
+		
+		<div id="content" class="container">
+		
+			<div id="loader" class="ui segment">
+				<div class="ui active inverted dimmer">
+					<div class="ui medium text loader">Loading</div>
+				</div>
+			</div>
+
+			<div id="domain-status-listing">
+				<div id="full-operation" class="hide page-status status-none">
+					<p><span class="status font-large">All Sites Are Operational</span></p>
+				</div>
+				
+				<div id="semi-operation" class="hide page-status status-minor">
+					<p><span class="status font-large">Only Several Sites Are Operational</span></p>
+				</div>
+				
+				<div id="no-operation" class="hide page-status status-critical">
+					<p><span class="status font-large">All Sites Are Offline</span></p>
+				</div>
+
+				<div id="domain-content" class="hide components-section font-regular">
+					<div id="domain-content-list" class="components-container one-column">
+					</div>
+				</div>
+			</div>
+			
+			<div class="components-section font-regular">
+				<div class="components-container one-column">
+					<div class="component-statuses-legend font-small">
+						<div class="legend-item status-green">
+							<span class="icon-indicator fa fa-check"></span>
+							Operational
+						</div>
+						<!--<div class="legend-item status-yellow">
+							<span class="icon-indicator fa fa-minus-square"></span>
+							Degraded Performance
+						</div>-->
+						<div class="legend-item status-orange">
+							<span class="icon-indicator fa fa-exclamation-triangle"></span>
+							Operational without SSL
+						</div>
+						<div class="legend-item status-red">
+							<span class="icon-indicator fa fa-times"></span>
+							Offline
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="page-footer border-color font-small">
+				<a class="history-footer-link" href="https://api.sanik.my/domain?auth={key}&domain={domain}" target="_blank"><span style="font-family:arial">Web Status API</span></a>
+				<span class="color-secondary powered-by" style="">Powered by <a class="color-primary" target="_blank" href="https://sanik.my">sanik.my</a></span>
+			</div>
+		</div>
+
+	</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="js/status_manifest.js"></script>
+<script src="js/status_common.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.js"></script>
+<script>
+	$(document).ready(function()
+    {
+		$(function() {
+			$('.powered-by').show().css('display','inline-block !important');
+		});
+		
+		$.ajax({
+            type: 'get',
+            url: 'https://api.sanik.my/domain',
+            data: { 'auth': 'KVW0ZeBQbQ', 'domain': 'all' },
+			//dataType: 'jsonp',
+            timeout: 30000,
+            beforeSend: function () {
+                $('#loader').show();
+                $('#domain-status-listing').hide();
+            },
+            complete: function () {
+                $('#loader').hide();
+                $('#domain-status-listing').show();
+            },
+            success: (function (data) {
+                //console.log(data);
+				
+				var countAlive = 0;
+				var countSSL = 0;
+				var countNonSSL = 0;
+				
+				$('#domain-content').show();
+				$.each(data.data, function (index, responseArray)
+                {
+					//console.log(data.status);
+					
+					if (responseArray.status == 'Online')
+					{
+						countAlive++;
+					
+						if (responseArray.ssl == 'On')
+						{
+							countSSL++;
+						
+							$('#domain-content-list').append('<div class=\"component-container border-color\">\
+															<div data-js-hook=\"\" class=\"component-inner-container status-green\">\
+															<span class=\"name\">\
+															<span class=\"component-status\">\
+															<i class=\"fa fa-lock\"></i> <a href=\"'+ responseArray.domain +'\" target=\"_blank\">'+ responseArray.domain +'</a>\
+															<span data-original-title=\"'+ responseArray.domain +' site" data-responsive-placement=\"right-when-small" data-js-hook=\"tooltip" class=\"tooltip-base">?</span>\
+															</span>\
+															</span>\
+															<span class=\"component-status\"><i class=\"fa fa-check\"></i> Operational</span>\
+															</div>\
+															</div>');
+						}
+						else
+						{
+							countNonSSL++;
+						
+							$('#domain-content-list').append('<div class=\"component-container border-color\">\
+															<div data-js-hook=\"\" class=\"component-inner-container status-orange\">\
+															<span class=\"name\">\
+															<span class=\"component-status">\
+															<i style=\"color: #000000;\" class=\"fa fa-unlock-alt\"></i> <a href=\"'+ responseArray.domain +'\" target=\"_blank\">'+ responseArray.domain +'</a>\
+															<span data-original-title=\"<'+ responseArray.domain +' site\" data-responsive-placement=\"right-when-small\" data-js-hook=\"tooltip\" class=\"tooltip-base\">?</span>\
+															</span>\
+															</span>\
+															<span class=\"component-status\"><i class=\"fa fa-exclamation-triangle\"></i> Operational without SSL</span>\
+															</div>\
+															</div>');
+						}
+					}
+					else
+					{
+						$('#domain-content-list').append('<div class=\"component-container border-color\">\
+														<div data-js-hook=\"\" class=\"component-inner-container status-red\">\
+														<span class=\"name\">\
+														<span class=\"component-status\">\
+														<i class=\"fa fa-chain-broken\"></i> <span style=\"color: #000000;\">'+ responseArray.domain +'</span>\
+														<span data-original-title=\"'+ responseArray.domain +'" data-responsive-placement=\"right-when-small\" data-js-hook=\"tooltip\" class=\"tooltip-base\">?</span>\
+														</span>\
+														</span>\
+														<span class=\"component-status\"><i class=\"fa fa-times\"></i> Offline</span>\
+														</div>\
+														</div>');
+					}
+                });
+				
+				if (countAlive == Object.keys(data.data).length)
+				{
+					$('#full-operation').show();
+					$('#full-operation').append('<p><span class=\"status\">Live Sites: ' + countAlive + ' / ' + Object.keys(data.data).length + ' </span></p>');
+					$('#full-operation').append('<p><span class=\"status\">With SSL: ' + countSSL + ' </span></p>');
+					$('#full-operation').append('<p><span class=\"status\">Without SSL: ' + countNonSSL + ' </span></p>');
+				}
+				else if (countAlive > 0 && countAlive < Object.keys(data.data).length)
+				{
+					$('#semi-operation').show();
+					$('#semi-operation').append('<p><span class=\"status\">Live Sites: ' + countAlive + ' / ' + Object.keys(data.data).length + ' </span></p>');
+					$('#semi-operation').append('<p><span class=\"status\">With SSL: ' + countSSL + ' </span></p>');
+					$('#semi-operation').append('<p><span class=\"status\">Without SSL: ' + countNonSSL + ' </span></p>');
+				}
+				else
+				{
+					$('#no-operation').show();
+					$('#no-operation').append('<p><span class=\"status\">Live Sites: ' + countAlive + ' / ' + Object.keys(data.data).length + ' </span></p>');
+					$('#no-operation').append('<p><span class=\"status\">With SSL: ' + countSSL + ' </span></p>');
+					$('#no-operation').append('<p><span class=\"status\">Without SSL: ' + countNonSSL + ' </span></p>');
+				}
+                
+            }),
+            error: (function (response) {
+                //console.log(response);
+				$('#domain-content').show();
+				$('#domain-content-list').append('<div class=\"component-container border-color\">\
+												<div data-js-hook=\"\" class=\"component-inner-container status-green\">Something is wrong</div>\
+												</div>');
+            })
+        });
+	});
+</script>
+
+</body>
+</html>
